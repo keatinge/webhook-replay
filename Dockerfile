@@ -1,6 +1,7 @@
 FROM node:12.13 as node-builder
 COPY rfront /whreplay/rfront
 WORKDIR /whreplay/rfront
+RUN npm install
 RUN npm run build
 FROM golang:1.13 as go-builder
 RUN apt-get update && apt-get install -y sqlite3

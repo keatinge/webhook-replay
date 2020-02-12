@@ -1,7 +1,7 @@
 version: '3'
 services:
   web:
-    build: .
+    image: "whreplay:latest"
     ports:
       - "5000:5000"
     volumes:

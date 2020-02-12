@@ -5,7 +5,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - "./replay.db:/whreplay/replay.db"
+      - "/home/q/install/webhook-replay/replay.db:/whreplay/replay.db"
     deploy:
       restart_policy:
         condition: always

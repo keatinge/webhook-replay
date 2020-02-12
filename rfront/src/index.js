@@ -5,11 +5,13 @@ import './index.css';
 import './foundation.min.css'
 
 
+let base_url = document.location.origin.includes("localhost") ? document.location.origin: document.location.origin + "/replay";
+
 function InfoBox(props) {
     return (
         <div className="info-box">
             <div className={"flex-apart"}>
-                <h5 style={{"display": "inline-block"}}>Send requests to {document.location.origin + "/create/" + props.ident + "/"}</h5>
+                <h5 style={{"display": "inline-block"}}>Send requests to {base_url + "/create/" + props.ident + "/"}</h5>
                 <button className={"button success"} onClick={props.refresh_cb}>Refresh Now! (happens automatically every 10 seconds)</button>
             </div>
             <div className="grid-x">
@@ -165,8 +167,7 @@ class Replay extends React.Component {
 
 function Replays(props) {
     let has_scheme = (props.recv_url.startsWith("http://")  || props.recv_url.startsWith("https://"));
-    let has_dot = props.recv_url.includes(".");
-    let is_disabled = !has_scheme || !has_dot;
+    let is_disabled = !has_scheme || props.recv_url.length < 8; // 8 because http:// are counted here
 
     let btn_text = is_disabled ?
         `You must configure your replay URL above before you can send a replay`
@@ -368,7 +369,7 @@ class MainPage extends React.Component {
     }
     async update() {
         console.log("Updating");
-        let url = document.location.origin + "/requests";
+        let url = base_url + "/requests";
         console.log("UPdating");
 
         let resp = await this.err_checked_fetch(url);
@@ -394,7 +395,7 @@ class MainPage extends React.Component {
 
     async send_new_replay(req) {
         console.log("Sending new replay for req", req);
-        let url = document.location.origin + "/replay";
+        let url = base_url + "/replay";
         let resp = await this.err_checked_fetch(url, {
             method: "POST",
             headers: {
@@ -412,7 +413,7 @@ class MainPage extends React.Component {
 
         let ident_cookie = get_cookie("ident");
         if (ident_cookie === "") {
-            let url = document.location.origin + "/register";
+            let url = base_url + "/register";
             let resp = await this.err_checked_fetch(url, {
                 method: "POST",
                 headers: {

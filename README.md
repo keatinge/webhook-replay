@@ -1,7 +1,8 @@
 # What is webhook-replay?
-In an nutshell, it's like requestbin but allows you to replay incoming requests,
-sending them to a url of your choosing. Webhook-replay is a project built to make it easier to develop and test webhooks with
+Webhook-replay is a project built to make it easier to develop and test webhooks with
 services that don't allow you to send test requests.
+In a nutshell, it's like requestbin but allows you to replay incoming requests,
+sending them to a url of your choosing. 
 
 The idea is that developers would use the following workflow:
 1. Visit https://wkeatinge.com/replay and get a custom url
@@ -9,7 +10,7 @@ The idea is that developers would use the following workflow:
 1. Do the action in the service (Github, Hubspot, etc) that triggers the webhook to be sent
 1. The webhook headers and body can now be inspected in the web app
 1. The developer configures their replay URL to point a server they control (or use a [ngrok](https://ngrok.com) url for development on localhost)
-1. They can replay the exact request to test how their application would perform if it had received the webhook.
+1. The developer can now replay the exact request as many times as needed to test how their application would perform if it had received the webhook request.
 
 
 The project is essentially an extension of tools like the ones listed below, with the additional ability to replay 
@@ -22,7 +23,7 @@ captured requests on a url of your choosing.
 # Example walkthrough
 - Go to https://wkeatinge.com/replay/, an account is automatically created for you, storing
 a unique id in your browser's cookies. You can delete the cookie to drop all your existing state.
-- At the top you should see text that says 'Send requests to <url>'. Copy the URL and send a request to it.
+- At the top you should see text that says 'Send requests to https://wkeatinge.com/replay/create/.../'. Copy the URL and send a request to it.
 For example, if your custom url was: 
 `
 https://wkeatinge.com/replay/create/XU4rCoLQyy6StRzQxcfIhdyn737PBE7n/
@@ -48,7 +49,7 @@ to *replay* this request, to send this exact request to a different url
 
 - Usually you would choose your own web server to recieve replays, but for demonstration purposes
 we can send the replays to a site like requestbin. Visit https://requestbin.com and create a private bin.
-Paste the endpoint url into the textbook on the top of wkeatinge.com/replay
+Paste the endpoint url into the textbox on the top of wkeatinge.com/replay
 
 - Click the blue button at the bottom that says "Send new replay" to send that same `{"hello": "world"}`
 request to requestbin.

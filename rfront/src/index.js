@@ -1,191 +1,209 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import moment from 'moment';
-import './index.css';
-import './foundation.min.css'
+import React from "react";
+import ReactDOM from "react-dom";
+import moment from "moment";
+import "./index.css";
+import "./foundation.min.css";
 
-
-let base_url = document.location.origin.includes("localhost") ? document.location.origin: document.location.origin + "/replay";
+let base_url = document.location.origin.includes("localhost")
+    ? document.location.origin
+    : document.location.origin + "/replay";
 
 function InfoBox(props) {
     return (
         <div className="info-box">
             <div className={"flex-apart"}>
-                <h5 style={{"display": "inline-block"}}>Send requests to {base_url + "/create/" + props.ident + "/"}</h5>
-                <button className={"button success"} onClick={props.refresh_cb}>Refresh Now! (happens automatically every 10 seconds)</button>
+                <h5 style={{ display: "inline-block" }}>
+                    Send requests to {base_url + "/create/" + props.ident + "/"}
+                </h5>
+                <button className={"button success"} onClick={props.refresh_cb}>
+                    Refresh Now! (happens automatically every 10 seconds)
+                </button>
             </div>
             <div className="grid-x">
                 <div>Where would you like to receive replays?</div>
-                <input type="text" style={{width: "100%"}} placeholder={"https://example.org"} value={props.url}
-                       onChange={props.on_change_cb}/>
+                <input
+                    type="text"
+                    style={{ width: "100%" }}
+                    placeholder={"https://example.org"}
+                    value={props.url}
+                    onChange={props.on_change_cb}
+                />
             </div>
         </div>
-    )
+    );
 }
-
 
 function Header(props) {
     return (
         <div className="header-bar">
             <h4>Request Replay</h4>
         </div>
-    )
+    );
 }
-
 
 function ReqListItem(props) {
     let time = moment(props.data.time);
     let delta_t = moment().diff(time, "s");
     let time_str = time.fromNow();
     if (delta_t < 60) {
-        time_str = `${delta_t} seconds ago`
+        time_str = `${delta_t} seconds ago`;
     }
 
     return (
         <div className="sidebar-req" onClick={() => props.cb(props.data)}>
             <div className="top-text">
-                <span className={"primary label"}>{props.data.meth}</span> <code>{props.data.loc}</code>
+                <span className={"primary label"}>{props.data.meth}</span>{" "}
+                <code>{props.data.loc}</code>
             </div>
-            <div className="bottom-text">
-                {time_str}
-            </div>
+            <div className="bottom-text">{time_str}</div>
         </div>
-
-
-    )
-
-
+    );
 }
 
 function ReqList(props) {
     return (
         <div className="cell small-3 y-scroll">
             <div className="left-sidebar">
-                {props.requests.map(r => <ReqListItem data={r} cb={props.cb}/>)}
+                {props.requests.map(r => (
+                    <ReqListItem data={r} cb={props.cb} />
+                ))}
             </div>
         </div>
     );
 }
-
 
 function DateTime(props) {
     let time = moment(props.dt);
 
     return (
-        <span data-tooltip aria-haspopup="true" data-disable-hover="false" className={"has-tip"} title={time.format()}>
-    {time.format("h:mm:ss")}<span className={"small-ms"}>.{time.format("SSS")}</span> {time.format("a")} - {time.fromNow()}
-</span>
-    )
+        <span
+            data-tooltip
+            aria-haspopup="true"
+            data-disable-hover="false"
+            className={"has-tip"}
+            title={time.format()}
+        >
+      {time.format("h:mm:ss")}
+            <span className={"small-ms"}>.{time.format("SSS")}</span>{" "}
+            {time.format("a")} - {time.fromNow()}
+    </span>
+    );
 }
 
 class Replay extends React.Component {
     constructor(props) {
         super(props);
-        // this.state = {
-        //     opacity: 0,
-        // }
     }
 
-    // componentDidMount() {
-    //     setTimeout(() => this.setState({opacity: 1.0, maxHeight: 9999999}), 0);
-    // }
-    // componentWillUnmount() {
-    //     this.setState({opacity: 1.0});
-    // }
-
     render() {
+        let is_error = this.props.replay.err_str !== null;
+        let class_str = is_error ? "alert" : "success";
 
-    let is_error = this.props.replay.err_str !== null;
-    let class_str = is_error ? "alert" : "success";
+        return (
+            <div className={"fade-in callout " + class_str} style={this.state}>
+                <h5>
+                    {this.props.request.meth} {this.props.replay.loc}
+                    {!is_error && (
+                        <span className={"primary label status-label"}>
+              {this.props.replay.resp_code}
+            </span>
+                    )}
+                    {is_error && (
+                        <span className={"alert label status-label"}>ERROR</span>
+                    )}
+                </h5>
 
-    return (
-        <div className={"fade-in callout " + class_str} style={this.state}>
-            <h5>{this.props.request.meth} {this.props.replay.loc}
-
-                {!is_error && <span className={"primary label status-label"}>{this.props.replay.resp_code}</span>}
-                {is_error && <span className={"alert label status-label"}>ERROR</span>}
-
-            </h5>
-
-            <div className={"info-tables"}>
-                <div className={"table-container"}>
-                    <label className={"viz-body-label"}>Response headers:</label>
-                    <table className={"slim-table"}>
-                        <tbody>
-                        {this.props.replay.resp_headers.map(h => (
+                <div className={"info-tables"}>
+                    <div className={"table-container"}>
+                        <label className={"viz-body-label"}>Response headers:</label>
+                        <table className={"slim-table"}>
+                            <tbody>
+                            {this.props.replay.resp_headers.map(h => (
+                                <tr>
+                                    <td>{h.Key}:</td>
+                                    <td>{h.Value}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className={"table-container"}>
+                        <label className={"viz-body-label"}>Response timing:</label>
+                        <table className={"slim-table"}>
+                            <tbody>
                             <tr>
-                                <td>{h.Key}:</td>
-                                <td>{h.Value}</td>
+                                <td>Response time:</td>
+                                <td>
+                                    {moment(this.props.replay.end_at).diff(
+                                        moment(this.props.replay.start_at),
+                                        "ms"
+                                    )}
+                                    ms
+                                </td>
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-                <div className={"table-container"}>
-                    <label className={"viz-body-label"}>Response timing:</label>
-                    <table className={"slim-table"}>
-                        <tbody>
-                        <tr>
-                            <td>Response time:</td>
-                            <td>{moment(this.props.replay.end_at).diff(moment(this.props.replay.start_at), "ms")}ms</td>
-                        </tr>
-                        <tr>
-                            <td>Sent at:</td>
-                            <td><DateTime dt={this.props.replay.start_at}/></td>
-                        </tr>
-                        <tr>
-                            <td>Response at:</td>
-                            <td><DateTime dt={this.props.replay.end_at}/></td>
-                        </tr>
-                        </tbody>
-                    </table>
+                            <tr>
+                                <td>Sent at:</td>
+                                <td>
+                                    <DateTime dt={this.props.replay.start_at} />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Response at:</td>
+                                <td>
+                                    <DateTime dt={this.props.replay.end_at} />
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
+                {is_error && (
+                    <div>
+                        <label className={"viz-body-label"}>Error:</label>
+                        <ReqBodyViz body={this.props.replay.err_str} />
+                    </div>
+                )}
 
+                {!is_error && (
+                    <div>
+                        <label className={"viz-body-label"}>Response body:</label>
+                        <ReqBodyViz body={this.props.replay.resp_body} />
+                    </div>
+                )}
             </div>
-
-            {is_error && (
-                <div>
-                    <label className={"viz-body-label"}>Error:</label>
-                    <ReqBodyViz body={this.props.replay.err_str}/>
-                </div>
-            )}
-
-            {!is_error && (
-                <div>
-                    <label className={"viz-body-label"}>Response body:</label>
-                    <ReqBodyViz body={this.props.replay.resp_body}/>
-                </div>
-            )}
-
-
-        </div>
-    )
-}
-
+        );
+    }
 }
 
 function Replays(props) {
-    let has_scheme = (props.recv_url.startsWith("http://")  || props.recv_url.startsWith("https://"));
+    let has_scheme =
+        props.recv_url.startsWith("http://") ||
+        props.recv_url.startsWith("https://");
     let is_disabled = !has_scheme || props.recv_url.length < 8; // 8 because http:// are counted here
 
-    let btn_text = is_disabled ?
-        `You must configure your replay URL above before you can send a replay`
+    let btn_text = is_disabled
+        ? `You must configure your replay URL above before you can send a replay`
         : `Send new replay! ${props.request.meth} to ${props.recv_url}`;
 
     return (
         <div className="replays-box">
             <h3>Replays</h3>
-            <button className="button" onClick={() => props.send_new_replay_cb(props.request)} disabled={is_disabled} style={{opacity: is_disabled ? 0.75 : 1.0}}>
+            <button
+                className="button"
+                onClick={() => props.send_new_replay_cb(props.request)}
+                disabled={is_disabled}
+                style={{ opacity: is_disabled ? 0.75 : 1.0 }}
+            >
                 {btn_text}
             </button>
 
-            {props.replays.map(r => <Replay key={r.id} request={props.request} replay={r}/>)}
-
+            {props.replays.map(r => (
+                <Replay key={r.id} request={props.request} replay={r} />
+            ))}
         </div>
     );
 }
-
 
 class ReqBodyViz extends React.Component {
     constructor(props) {
@@ -197,58 +215,59 @@ class ReqBodyViz extends React.Component {
             json_body = JSON.parse(props.body);
             json_formatted = JSON.stringify(json_body, null, 2);
         } catch (e) {
-// This is fine, it's just not valid json
+            // Not JSON
         }
-
         this.state = {
-            json_body: json_body, json_fmt: json_formatted
+            json_body: json_body,
+            json_fmt: json_formatted
         };
     }
 
     render() {
         return (
             <pre className={"viz-body"}>
-    {this.state.json_fmt ? this.state.json_fmt : this.props.body}
-</pre>
+                {this.state.json_fmt ? this.state.json_fmt : this.props.body}
+            </pre>
         );
-
     }
-
-
 }
 
-
 function ViewReq(props) {
-
-
     let json_formatted = null;
     let json_body = null;
     try {
         json_body = JSON.parse(props.request.body);
         json_formatted = JSON.stringify(json_body, null, 2);
-    } catch (e) {
-// This is fine, just means it's not json
-    }
+    } catch (e) {}
 
     let n_replays = props.request.replays.length;
-    let succ_replays = props.request.replays.map(r => r.err_str !== null).reduce((a, b) => a + b, 0);
+    let succ_replays = props.request.replays
+        .map(r => r.err_str !== null)
+        .reduce((a, b) => a + b, 0);
     let failled_replays = n_replays - succ_replays;
-    let avg_response_time = props.request.replays.map(r => {
-        return moment(r.end_at).diff(moment(r.start_at), "ms")
-    }).reduce((a, b) => a + b, 0) / n_replays;
+    let avg_response_time =
+        props.request.replays
+            .map(r => {
+                return moment(r.end_at).diff(moment(r.start_at), "ms");
+            })
+            .reduce((a, b) => a + b, 0) / n_replays;
 
     return (
         <div className="cell small-9 y-scroll">
             <div className="right-sidebar">
-                <h3 className={"sidebar-title"}>{props.request.meth} {props.request.loc}</h3>
+                <h3 className={"sidebar-title"}>
+                    {props.request.meth} {props.request.loc}
+                </h3>
                 <h5 className={"sidebar-subtitle"}>
                     {props.request.time}
-                    <span style={{"margin-left": "50px"}}><DateTime dt={props.request.time}/></span>
+                    <span style={{ "margin-left": "50px" }}>
+            <DateTime dt={props.request.time} />
+          </span>
                 </h5>
 
                 <div className="grid-x">
                     <div className="cell medium-6">
-                        <div className="right-table" style={{"paddingRight": "10px"}}>
+                        <div className="right-table" style={{ paddingRight: "10px" }}>
                             <h5>Request Headers:</h5>
                             <table className={"table-no-overflow"}>
                                 <tbody>
@@ -256,13 +275,14 @@ function ViewReq(props) {
                                     <tr>
                                         <td>{h.Key}</td>
                                         <td>{h.Value}</td>
-                                    </tr>))}
+                                    </tr>
+                                ))}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div className="cell medium-6">
-                        <div className="right-table" style={{"paddingLeft": "10px"}}>
+                        <div className="right-table" style={{ paddingLeft: "10px" }}>
                             <h5>Replay Stats:</h5>
                             <table className={"table-no-overflow"}>
                                 <tbody>
@@ -280,7 +300,11 @@ function ViewReq(props) {
                                 </tr>
                                 <tr>
                                     <td>Average Response time</td>
-                                    <td>{isNaN(avg_response_time) ? "" : avg_response_time + " ms"}</td>
+                                    <td>
+                                        {isNaN(avg_response_time)
+                                            ? ""
+                                            : avg_response_time + " ms"}
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -289,24 +313,23 @@ function ViewReq(props) {
                 </div>
 
                 <div className="right-section">
-
                     <h5>Request Body:</h5>
-                    <pre className={"req-body"}>
-            {props.request.body}
-        </pre>
+                    <pre className={"req-body"}>{props.request.body}</pre>
                 </div>
 
-                {json_formatted !== null && (<div className="right-section">
-                    <h5>Formatted JSON</h5>
-                    <pre className={"req-body"}>
-        {json_formatted}
-    </pre>
-                </div>)}
+                {json_formatted !== null && (
+                    <div className="right-section">
+                        <h5>Formatted JSON</h5>
+                        <pre className={"req-body"}>{json_formatted}</pre>
+                    </div>
+                )}
 
-
-                <Replays request={props.request} replays={props.request.replays}
-                         send_new_replay_cb={props.send_new_replay_cb} recv_url={props.recv_url}/>
-
+                <Replays
+                    request={props.request}
+                    replays={props.request.replays}
+                    send_new_replay_cb={props.send_new_replay_cb}
+                    recv_url={props.recv_url}
+                />
             </div>
         </div>
     );
@@ -314,25 +337,22 @@ function ViewReq(props) {
 
 //https://stackoverflow.com/questions/5639346
 function get_cookie(a) {
-    let b = document.cookie.match('(^|[^;]+)\\s*' + a + '\\s*=\\s*([^;]+)');
-    return b ? b.pop() : '';
+    let b = document.cookie.match("(^|[^;]+)\\s*" + a + "\\s*=\\s*([^;]+)");
+    return b ? b.pop() : "";
 }
-
 
 class MainPage extends React.Component {
     constructor(props) {
         super(props);
 
-
         this.state = {
             current_req_id: null,
             requests: [],
             recv_url: "",
-            ident: "",
+            ident: ""
         };
         this.set_req_cb = this.set_req.bind(this);
     }
-
 
     error_message(msg) {
         alert(msg);
@@ -342,22 +362,19 @@ class MainPage extends React.Component {
     async bad_response_error(url, response) {
         let text;
         try {
-            text = await response.text()
-        }
-        catch (e) {
-            text = e.toString()
+            text = await response.text();
+        } catch (e) {
+            text = e.toString();
         }
         let msg = `Request to ${url} returned status code ${response.status} ${response.statusText}: ${text}`;
         this.error_message(msg);
     }
 
-
     async err_checked_fetch(url, opts) {
         let fetch_res;
         try {
             fetch_res = await fetch(url, opts);
-        }
-        catch(e) {
+        } catch (e) {
             let error_msg = `Failed to fetch ${url} with ${opts}: ${e}`;
             this.error_message(error_msg);
         }
@@ -365,8 +382,9 @@ class MainPage extends React.Component {
         if (!fetch_res.ok) {
             this.bad_response_error(url, fetch_res);
         }
-        return fetch_res
+        return fetch_res;
     }
+
     async update() {
         console.log("Updating");
         let url = base_url + "/requests";
@@ -374,23 +392,21 @@ class MainPage extends React.Component {
 
         let resp = await this.err_checked_fetch(url);
         let resp_json = await resp.json();
-        this.setState({requests: resp_json});
-
+        this.setState({ requests: resp_json });
     }
 
     async componentDidMount() {
         await this.register_if_needed();
         this.update();
         setInterval(this.update.bind(this), 10_000);
-
     }
 
     set_req(req) {
-        this.setState({current_req_id: req.id});
+        this.setState({ current_req_id: req.id });
     }
 
     on_url_change(event) {
-        this.setState({recv_url: event.target.value});
+        this.setState({ recv_url: event.target.value });
     }
 
     async send_new_replay(req) {
@@ -401,16 +417,17 @@ class MainPage extends React.Component {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({request_id: req.id, endpoint: this.state.recv_url})
+            body: JSON.stringify({
+                request_id: req.id,
+                endpoint: this.state.recv_url
+            })
         });
         let json_resp = await resp.json();
         await this.update();
         console.log("Got response", json_resp);
-
     }
 
     async register_if_needed() {
-
         let ident_cookie = get_cookie("ident");
         if (ident_cookie === "") {
             let url = base_url + "/register";
@@ -423,15 +440,14 @@ class MainPage extends React.Component {
             console.log(resp);
             let new_ident = get_cookie("ident");
             console.log("Creating new registration", new_ident);
-            this.setState({ident: new_ident})
+            this.setState({ ident: new_ident });
         } else {
             console.log("Already registered as", ident_cookie);
-            this.setState({ident: ident_cookie})
+            this.setState({ ident: ident_cookie });
         }
     }
 
     render() {
-
         let side_by_side = this.state.current_req !== null;
 
         let req_table_class = "cell " + (side_by_side ? "small-4" : "small-8");
@@ -445,27 +461,28 @@ class MainPage extends React.Component {
 
         return (
             <div className="main-container">
-                <Header/>
-                <InfoBox refresh_cb={this.update.bind(this)}url={this.state.recv_url} on_change_cb={this.on_url_change.bind(this)} ident={this.state.ident}/>
+                <Header />
+                <InfoBox
+                    refresh_cb={this.update.bind(this)}
+                    url={this.state.recv_url}
+                    on_change_cb={this.on_url_change.bind(this)}
+                    ident={this.state.ident}
+                />
                 <div className="grid-x">
-                    {/*<div className={req_table_class}>*/}
-                    {/*    <ReqTable requests={this.state.requests} cb={this.set_req_cb}/>*/}
-                    {/*</div>*/}
-                    <ReqList requests={this.state.requests} cb={this.set_req_cb}/>
-                    {current_req !== null &&
-                    <ViewReq request={current_req} send_new_replay_cb={this.send_new_replay.bind(this)}
-                             recv_url={this.state.recv_url}/>}
+                    <ReqList requests={this.state.requests} cb={this.set_req_cb} />
+                    {current_req !== null && (
+                        <ViewReq
+                            request={current_req}
+                            send_new_replay_cb={this.send_new_replay.bind(this)}
+                            recv_url={this.state.recv_url}
+                        />
+                    )}
                 </div>
             </div>
         );
-        let numbers = [1, 2, 3, 4];
-        return <div>{numbers.map(n => <li>{n}</li>)}</div>
     }
 }
 
 // ========================================
 
-ReactDOM.render(
-    <MainPage/>,
-    document.getElementById('root')
-);
+ReactDOM.render(<MainPage />, document.getElementById("root"));

@@ -347,15 +347,35 @@ type User struct {
 
 func (h* Handler) GetUserByIdent(ident string) (*User, error) {
 	id, err := h.rdb.GetUserIdByIdent(ident)
+
 	return &User{ident:ident, id:id}, err
 
 }
 func (h* Handler) GetUserByContext(c echo.Context) (*User, error) {
 	ident, err := c.Cookie("ident")
+
+
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not find ident cookie")
 	}
-	return h.GetUserByIdent(ident.Value)
+
+	if len(ident.Value) == 0 {
+		return nil, errors.New("Missing ident")
+	}
+
+	user, err := h.GetUserByIdent(ident.Value)
+	if err == sql.ErrNoRows { // Identification exists but it isn't correct
+		log.Printf("Auth failed for %q, registering new user", ident)
+		new_user, new_err := h.register_from_context(c)
+		return new_user, new_err
+	}
+
+	if err != nil {
+		log.Printf("Unexpected error on GetUserByContext(%q) %q", ident, err)
+		return nil, errors.New("Unauthorized")
+	}
+	return user, err
+
 }
 
 func (h *Handler) create(c echo.Context) error {
@@ -363,7 +383,8 @@ func (h *Handler) create(c echo.Context) error {
 	ident := c.Param("ident")
 	user, err := h.GetUserByIdent(ident)
 	if err != nil {
-		return unauthorized(c)
+		fmt.Println(err)
+		return bad_request(c, fmt.Sprintf("Invalid identification: %v, this url does not exist", ident))
 	}
 
 	url_string := c.Request().URL.String()
@@ -408,7 +429,7 @@ func (h *Handler) create(c echo.Context) error {
 func (h *Handler) get_requests(c echo.Context) error {
 	user, err := h.GetUserByContext(c)
 	if err != nil {
-		return unauthorized(c)
+		return bad_request(c, err.Error())
 	}
 
 	reqs, err := h.rdb.GetRequestsForIdent(user.ident)
@@ -480,8 +501,8 @@ type Limit struct {
 
 func checkRateLimits(rdb *ReplayDB) error {
 	limits := []Limit{
-		{how_far_back:10*time.Second, num_replays_allowed:5}, // TODO
-		{how_far_back:1*time.Minute, num_replays_allowed:30}, // TODO
+		{how_far_back:10*time.Second, num_replays_allowed:5},
+		{how_far_back:1*time.Minute, num_replays_allowed:30},
 		{how_far_back:1*time.Hour, num_replays_allowed:1_000},
 		{how_far_back:24*time.Hour, num_replays_allowed:10_000},
 	}
@@ -511,7 +532,7 @@ func (h* Handler) replay(c echo.Context) error {
 	}
 	user, err := h.GetUserByContext(c)
 	if err != nil {
-		return unauthorized(c)
+		return bad_request(c, err.Error())
 	}
 
 	var replay_req ReplayRequest
@@ -555,7 +576,7 @@ func (h* Handler) replay(c echo.Context) error {
 	resp, err := client.Do(http_req)
 
 
-	if err != nil { // TODO: Redesign, maybe this should go in as a request with the error
+	if err != nil {
 		err_str := fmt.Sprintf("Couldn't client.do request, error %q", err)
 		return h.replay_error_response(c, id, replay_req.Endpoint, t_start, time.Now().UTC(), err_str)
 	}
@@ -598,28 +619,43 @@ type RegisterResult struct {
 	Ident string `json:"ident"`
 }
 
-func (h* Handler) register(c echo.Context) error {
+
+//func register_user(user_agent string, remote_addr string) (string, error) {
+//	if len(user_agent) == 0 || len(remote_addr) == 0 {
+//		return "", errors.New("Missing User-Agent or Remote Addr")
+//	}
+//	ip := strings.SplitN(remote_addr, ":", 2)[0]
+//	rand_buf := make([]byte, 16)
+//	_, err := rand.Read(rand_buf)
+//	if err != nil {
+//		return "", errors.New(fmt.Sprintf("Failed to generate random bytes %v", err))
+//	}
+//
+//	ident := base64.RawURLEncoding.EncodeToString(rand_buf)
+//	user_id, err := h.rdb.RegisterUser(user_agent, ip, ident)
+//	log.Printf("Registered user id: %v with ident: %v", user_id, ident)
+//	if err != nil {
+//		return internal_error(c, "Could not register user")
+//	}
+//
+//
+//}
+
+// This is not a request handler
+func (h* Handler) register_from_context(c echo.Context) (*User, error) {
 	user_agent := c.Request().Header.Get("User-Agent")
 
-	if len(user_agent) == 0 {
-		return bad_request(c, "Missing User-Agent")
-	}
-
 	ip := strings.SplitN(c.Request().RemoteAddr, ":", 2)[0]
-
-
-
-	rand_buf := make([]byte, 24)
+	rand_buf := make([]byte, 16)
 	_, err := rand.Read(rand_buf)
 	if err != nil {
-		return internal_error(c, fmt.Sprintf("Failed to generate random bytes %v", err))
+		return nil, errors.New(fmt.Sprintf("Register: failed to generate random bytes %v", err))
 	}
 	ident := base64.RawURLEncoding.EncodeToString(rand_buf)
-
 	user_id, err := h.rdb.RegisterUser(user_agent, ip, ident)
 	log.Printf("Registered user id: %v with ident: %v", user_id, ident)
 	if err != nil {
-		return internal_error(c, "Could not register user")
+		return nil, errors.New("Could not save registered user to db")
 	}
 
 	cookie := http.Cookie{
@@ -628,7 +664,21 @@ func (h* Handler) register(c echo.Context) error {
 		Expires: time.Now().UTC().Add(10 * 365 * 24 * time.Hour), // Expire in 10 years
 	}
 	c.SetCookie(&cookie)
-	return c.JSON(http.StatusOK, RegisterResult{ident})
+
+	return &User{
+		ident: ident,
+		id:    user_id,
+	}, nil
+
+}
+
+func (h* Handler) register(c echo.Context) error {
+
+	user, err := h.register_from_context(c)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, RegisterResult{user.ident})
 
 
 }

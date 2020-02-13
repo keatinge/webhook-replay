@@ -12,11 +12,11 @@ function InfoBox(props) {
     return (
         <div className="info-box">
             <div className={"flex-apart"}>
-                <h5 style={{ display: "inline-block" }}>
-                    Send requests to {base_url + "/create/" + props.ident + "/"}
+                <h5 className={"send-req"} style={{ display: "inline-block", fontSize: "1.1rem"}}>
+                    Send requests to {props.custom_url}
                 </h5>
                 <button className={"button success"} onClick={props.refresh_cb}>
-                    Refresh Now! (happens automatically every 10 seconds)
+                    Refresh
                 </button>
             </div>
             <div className="grid-x">
@@ -62,7 +62,7 @@ function ReqListItem(props) {
 
 function ReqList(props) {
     return (
-        <div className="cell small-3 y-scroll">
+        <div className="cell medium-3 y-scroll">
             <div className="left-sidebar">
                 {props.requests.map(r => (
                     <ReqListItem data={r} cb={props.cb} />
@@ -253,16 +253,16 @@ function ViewReq(props) {
             .reduce((a, b) => a + b, 0) / n_replays;
 
     return (
-        <div className="cell small-9 y-scroll">
+        <div className="cell medium-9 y-scroll">
             <div className="right-sidebar">
                 <h3 className={"sidebar-title"}>
                     {props.request.meth} {props.request.loc}
                 </h3>
                 <h5 className={"sidebar-subtitle"}>
                     {props.request.time}
-                    <span style={{ "margin-left": "50px" }}>
-            <DateTime dt={props.request.time} />
-          </span>
+                    <span style={{"font-size": ".8em"}}>
+                        <DateTime dt={props.request.time} />
+                    </span>
                 </h5>
 
                 <div className="grid-x">
@@ -319,7 +319,7 @@ function ViewReq(props) {
 
                 {json_formatted !== null && (
                     <div className="right-section">
-                        <h5>Formatted JSON</h5>
+                        <h5>Formatted JSON:</h5>
                         <pre className={"req-body"}>{json_formatted}</pre>
                     </div>
                 )}
@@ -330,6 +330,26 @@ function ViewReq(props) {
                     send_new_replay_cb={props.send_new_replay_cb}
                     recv_url={props.recv_url}
                 />
+            </div>
+        </div>
+    );
+}
+
+
+function Help(props) {
+    return (
+        <div className={"cell medium-9"} style={{"padding": 20}}>
+            <div className={"callout"}>
+                <h5>You haven't received any requests!</h5>
+                <p>Send an http request to <code>{props.custom_url}</code> to get started! For example, you could send the following request with curl:</p>
+                <pre className={"req-body"}>
+                    curl --header 'Content-Type: application/json' \<br/>
+                    --request POST \<br/>
+                    --data '&#123;"hello": "world" &#125;' \<br/>
+                    {props.custom_url}
+                </pre>
+                <p>Or you can send an HTTP request using your browser by clicking here: <a href={props.custom_url}>{props.custom_url}</a></p>
+
             </div>
         </div>
     );
@@ -349,9 +369,13 @@ class MainPage extends React.Component {
             current_req_id: null,
             requests: [],
             recv_url: "",
-            ident: ""
+            ident: "",
         };
         this.set_req_cb = this.set_req.bind(this);
+    }
+
+    get_custom_url() {
+        return base_url + "/create/" + this.state.ident + "/"
     }
 
     error_message(msg) {
@@ -382,6 +406,7 @@ class MainPage extends React.Component {
         if (!fetch_res.ok) {
             this.bad_response_error(url, fetch_res);
         }
+        this.setState({ident: get_cookie("ident")});
         return fetch_res;
     }
 
@@ -393,6 +418,9 @@ class MainPage extends React.Component {
         let resp = await this.err_checked_fetch(url);
         let resp_json = await resp.json();
         this.setState({ requests: resp_json });
+        if (this.state.current_req_id === null && resp_json.length > 0) {
+            this.setState({ current_req_id: resp_json[0].id});
+        }
     }
 
     async componentDidMount() {
@@ -450,7 +478,7 @@ class MainPage extends React.Component {
     render() {
         let side_by_side = this.state.current_req !== null;
 
-        let req_table_class = "cell " + (side_by_side ? "small-4" : "small-8");
+        let req_table_class = "cell " + (side_by_side ? "medium-4" : "medium-8");
 
         let current_req = null;
         for (let i = 0; i < this.state.requests.length; i++) {
@@ -465,11 +493,15 @@ class MainPage extends React.Component {
                 <InfoBox
                     refresh_cb={this.update.bind(this)}
                     url={this.state.recv_url}
+                    custom_url={this.get_custom_url()}
                     on_change_cb={this.on_url_change.bind(this)}
                     ident={this.state.ident}
                 />
                 <div className="grid-x">
                     <ReqList requests={this.state.requests} cb={this.set_req_cb} />
+                    {this.state.requests.length === 0 &&
+                        <Help custom_url={this.get_custom_url()} />
+                    }
                     {current_req !== null && (
                         <ViewReq
                             request={current_req}

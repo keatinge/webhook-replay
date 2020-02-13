@@ -1,5 +1,7 @@
-#root, html, body, .main-container {
-    /*height: 100%;*/
+#root,
+html,
+body,
+.main-container {
     height: calc(100% - 0px);
 }
 
@@ -8,8 +10,6 @@
 }
 
 .info-box {
-
-    /* background-color: #101010; */
     margin-bottom: 0;
     padding: 20px;
     border-bottom: 1px solid lightgray;
@@ -32,20 +32,17 @@
     height: 100%;
 }
 
-
 .req-table tbody tr:hover {
     cursor: pointer;
-    color: #BAF0FF;
+    color: #baf0ff;
     background-color: #313131;
 }
 
 .req-zoom {
-
     padding-top: 0px;
     padding-left: 10px;
     padding-right: 10px;
 }
-
 
 .header-bar {
     background: #1b262c;
@@ -53,19 +50,18 @@
     height: 40px;
 }
 .header-bar > h4 {
-    opacity: .75;
+    opacity: 0.75;
     margin-left: 20px;
 }
 .header-bar > h4:hover {
-    opacity: 1.0;
-    transition: all .25s ease-in-out;
+    opacity: 1;
+    transition: all 0.25s ease-in-out;
 }
 
 .left-sidebar {
     height: 100%;
     background-color: #fbfbfc;
 }
-
 
 .sidebar-req {
     border-bottom: 1px solid lightgray;
@@ -82,11 +78,11 @@
 
 .bottom-text {
     margin-top: 5px;
-    opacity: .85;
+    opacity: 0.85;
 }
 
 .right-sidebar {
-    padding: 20px
+    padding: 20px;
 }
 
 .right-sidebar > h3.sidebar-title {
@@ -94,7 +90,7 @@
 }
 .right-sidebar > h5.sidebar-subtitle {
     margin-top: 0;
-    opacity: .75;
+    opacity: 0.75;
 }
 
 .right-sidebar > h5 > small {
@@ -120,7 +116,6 @@
     padding-top: 20px;
     border-top: 1px solid lightgray;
 }
-
 
 .replay-box {
     border: 1px solid lightgray;
@@ -158,7 +153,6 @@
     padding: 0 30px 0 0;
 }
 
-
 .info-tables {
     display: flex;
     flex-direction: row;
@@ -172,7 +166,7 @@
 
 .small-ms {
     font-size: 0.8em;
-    opacity: .7;
+    opacity: 0.7;
 }
 
 .table-no-overflow {
@@ -188,9 +182,8 @@
     transition: opacity 1s ease-in;
 }
 
-
 .sidebar-subtitle {
-    display: inline-block
+    display: inline-block;
 }
 
 .flex-apart {
@@ -204,7 +197,7 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: center
+    align-items: center;
 }
 
 .send-req {
@@ -215,8 +208,6 @@
 .sidebar-subtitle > span {
     margin-left: 50px;
 }
-
-
 
 @media screen and (max-width: 730px) {
     .send-req {

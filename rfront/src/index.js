@@ -12,7 +12,10 @@ function InfoBox(props) {
     return (
         <div className="info-box">
             <div className={"flex-apart"}>
-                <h5 className={"send-req"} style={{ display: "inline-block", fontSize: "1.1rem"}}>
+                <h5
+                    className={"send-req"}
+                    style={{ display: "inline-block", fontSize: "1.1rem" }}
+                >
                     Send requests to {props.custom_url}
                 </h5>
                 <button className={"button success"} onClick={props.refresh_cb}>
@@ -83,10 +86,10 @@ function DateTime(props) {
             className={"has-tip"}
             title={time.format()}
         >
-      {time.format("h:mm:ss")}
+            {time.format("h:mm:ss")}
             <span className={"small-ms"}>.{time.format("SSS")}</span>{" "}
             {time.format("a")} - {time.fromNow()}
-    </span>
+        </span>
     );
 }
 
@@ -105,54 +108,64 @@ class Replay extends React.Component {
                     {this.props.request.meth} {this.props.replay.loc}
                     {!is_error && (
                         <span className={"primary label status-label"}>
-              {this.props.replay.resp_code}
-            </span>
+                            {this.props.replay.resp_code}
+                        </span>
                     )}
                     {is_error && (
-                        <span className={"alert label status-label"}>ERROR</span>
+                        <span className={"alert label status-label"}>
+                            ERROR
+                        </span>
                     )}
                 </h5>
 
                 <div className={"info-tables"}>
                     <div className={"table-container"}>
-                        <label className={"viz-body-label"}>Response headers:</label>
+                        <label className={"viz-body-label"}>
+                            Response headers:
+                        </label>
                         <table className={"slim-table"}>
                             <tbody>
-                            {this.props.replay.resp_headers.map(h => (
-                                <tr>
-                                    <td>{h.Key}:</td>
-                                    <td>{h.Value}</td>
-                                </tr>
-                            ))}
+                                {this.props.replay.resp_headers.map(h => (
+                                    <tr>
+                                        <td>{h.Key}:</td>
+                                        <td>{h.Value}</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
                     <div className={"table-container"}>
-                        <label className={"viz-body-label"}>Response timing:</label>
+                        <label className={"viz-body-label"}>
+                            Response timing:
+                        </label>
                         <table className={"slim-table"}>
                             <tbody>
-                            <tr>
-                                <td>Response time:</td>
-                                <td>
-                                    {moment(this.props.replay.end_at).diff(
-                                        moment(this.props.replay.start_at),
-                                        "ms"
-                                    )}
-                                    ms
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Sent at:</td>
-                                <td>
-                                    <DateTime dt={this.props.replay.start_at} />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Response at:</td>
-                                <td>
-                                    <DateTime dt={this.props.replay.end_at} />
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td>Response time:</td>
+                                    <td>
+                                        {moment(this.props.replay.end_at).diff(
+                                            moment(this.props.replay.start_at),
+                                            "ms"
+                                        )}
+                                        ms
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Sent at:</td>
+                                    <td>
+                                        <DateTime
+                                            dt={this.props.replay.start_at}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Response at:</td>
+                                    <td>
+                                        <DateTime
+                                            dt={this.props.replay.end_at}
+                                        />
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -167,7 +180,9 @@ class Replay extends React.Component {
 
                 {!is_error && (
                     <div>
-                        <label className={"viz-body-label"}>Response body:</label>
+                        <label className={"viz-body-label"}>
+                            Response body:
+                        </label>
                         <ReqBodyViz body={this.props.replay.resp_body} />
                     </div>
                 )}
@@ -260,52 +275,58 @@ function ViewReq(props) {
                 </h3>
                 <h5 className={"sidebar-subtitle"}>
                     {props.request.time}
-                    <span style={{"font-size": ".8em"}}>
+                    <span style={{ "font-size": ".8em" }}>
                         <DateTime dt={props.request.time} />
                     </span>
                 </h5>
 
                 <div className="grid-x">
                     <div className="cell medium-6">
-                        <div className="right-table" style={{ paddingRight: "10px" }}>
+                        <div
+                            className="right-table"
+                            style={{ paddingRight: "10px" }}
+                        >
                             <h5>Request Headers:</h5>
                             <table className={"table-no-overflow"}>
                                 <tbody>
-                                {props.request.headers.map(h => (
-                                    <tr>
-                                        <td>{h.Key}</td>
-                                        <td>{h.Value}</td>
-                                    </tr>
-                                ))}
+                                    {props.request.headers.map(h => (
+                                        <tr>
+                                            <td>{h.Key}</td>
+                                            <td>{h.Value}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div className="cell medium-6">
-                        <div className="right-table" style={{ paddingLeft: "10px" }}>
+                        <div
+                            className="right-table"
+                            style={{ paddingLeft: "10px" }}
+                        >
                             <h5>Replay Stats:</h5>
                             <table className={"table-no-overflow"}>
                                 <tbody>
-                                <tr>
-                                    <td>Attempted Replays:</td>
-                                    <td>{n_replays}</td>
-                                </tr>
-                                <tr>
-                                    <td>Successful Replays:</td>
-                                    <td>{succ_replays}</td>
-                                </tr>
-                                <tr>
-                                    <td>Failed Replays:</td>
-                                    <td>{failled_replays}</td>
-                                </tr>
-                                <tr>
-                                    <td>Average Response time</td>
-                                    <td>
-                                        {isNaN(avg_response_time)
-                                            ? ""
-                                            : avg_response_time + " ms"}
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>Attempted Replays:</td>
+                                        <td>{n_replays}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Successful Replays:</td>
+                                        <td>{succ_replays}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Failed Replays:</td>
+                                        <td>{failled_replays}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Average Response time</td>
+                                        <td>
+                                            {isNaN(avg_response_time)
+                                                ? ""
+                                                : avg_response_time + " ms"}
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -335,21 +356,27 @@ function ViewReq(props) {
     );
 }
 
-
 function Help(props) {
     return (
-        <div className={"cell medium-9"} style={{"padding": 20}}>
+        <div className={"cell medium-9"} style={{ padding: 20 }}>
             <div className={"callout"}>
                 <h5>You haven't received any requests!</h5>
-                <p>Send an http request to <code>{props.custom_url}</code> to get started! For example, you could send the following request with curl:</p>
+                <p>
+                    Send an http request to <code>{props.custom_url}</code> to
+                    get started! For example, you could send the following
+                    request with curl:
+                </p>
                 <pre className={"req-body"}>
-                    curl --header 'Content-Type: application/json' \<br/>
-                    --request POST \<br/>
-                    --data '&#123;"hello": "world" &#125;' \<br/>
+                    curl --header 'Content-Type: application/json' \<br />
+                    --request POST \<br />
+                    --data '&#123;"hello": "world" &#125;' \<br />
                     {props.custom_url}
                 </pre>
-                <p>Or you can send an HTTP request using your browser by clicking here: <a href={props.custom_url}>{props.custom_url}</a></p>
-
+                <p>
+                    Or you can send an HTTP request using your browser by
+                    clicking here:{" "}
+                    <a href={props.custom_url}>{props.custom_url}</a>
+                </p>
             </div>
         </div>
     );
@@ -369,13 +396,13 @@ class MainPage extends React.Component {
             current_req_id: null,
             requests: [],
             recv_url: "",
-            ident: "",
+            ident: ""
         };
         this.set_req_cb = this.set_req.bind(this);
     }
 
     get_custom_url() {
-        return base_url + "/create/" + this.state.ident + "/"
+        return base_url + "/create/" + this.state.ident + "/";
     }
 
     error_message(msg) {
@@ -406,7 +433,7 @@ class MainPage extends React.Component {
         if (!fetch_res.ok) {
             this.bad_response_error(url, fetch_res);
         }
-        this.setState({ident: get_cookie("ident")});
+        this.setState({ ident: get_cookie("ident") });
         return fetch_res;
     }
 
@@ -419,7 +446,7 @@ class MainPage extends React.Component {
         let resp_json = await resp.json();
         this.setState({ requests: resp_json });
         if (this.state.current_req_id === null && resp_json.length > 0) {
-            this.setState({ current_req_id: resp_json[0].id});
+            this.setState({ current_req_id: resp_json[0].id });
         }
     }
 
@@ -478,7 +505,8 @@ class MainPage extends React.Component {
     render() {
         let side_by_side = this.state.current_req !== null;
 
-        let req_table_class = "cell " + (side_by_side ? "medium-4" : "medium-8");
+        let req_table_class =
+            "cell " + (side_by_side ? "medium-4" : "medium-8");
 
         let current_req = null;
         for (let i = 0; i < this.state.requests.length; i++) {
@@ -498,10 +526,13 @@ class MainPage extends React.Component {
                     ident={this.state.ident}
                 />
                 <div className="grid-x">
-                    <ReqList requests={this.state.requests} cb={this.set_req_cb} />
-                    {this.state.requests.length === 0 &&
+                    <ReqList
+                        requests={this.state.requests}
+                        cb={this.set_req_cb}
+                    />
+                    {this.state.requests.length === 0 && (
                         <Help custom_url={this.get_custom_url()} />
-                    }
+                    )}
                     {current_req !== null && (
                         <ViewReq
                             request={current_req}

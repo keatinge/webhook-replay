@@ -13,6 +13,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -342,11 +343,12 @@ func (h *Handler) GetUserByContext(c echo.Context) (*User, error) {
 		return nil, errors.New("Could not find ident cookie")
 	}
 
-	if len(ident.Value) == 0 {
+	ident_str := ident.Value
+	if len(ident_str) == 0 {
 		return nil, errors.New("Missing ident")
 	}
 
-	user, err := h.GetUserByIdent(ident.Value)
+	user, err := h.GetUserByIdent(ident_str)
 	if err == sql.ErrNoRows { // Identification exists but it isn't correct
 		log.Printf("Auth failed for %q, registering new user", ident)
 		new_user, new_err := h.register_from_context(c)
@@ -547,7 +549,7 @@ func (h *Handler) replay(c echo.Context) error {
 	}
 
 	log.Printf("Starting request: %v %v for %v", http_req.Method, http_req.URL.String(), user)
-	client := http.Client{}
+	client := http.Client{Timeout: 5 * time.Second}
 	t_start := time.Now().UTC()
 	resp, err := client.Do(http_req)
 
@@ -633,6 +635,7 @@ func (h *Handler) register(c echo.Context) error {
 
 }
 
+
 func main() {
 
 	h := Handler{}
@@ -644,6 +647,14 @@ func main() {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "[${time_rfc3339}] method=${method}, uri=${uri}, status=${status}, error=${error}, ip=${remote_ip}, ua=${user_agent}, lat=${latency_human}, bin=${bytes_in}, bout=${bytes_out}, ident=${cookie:ident}\n",
 	}))
+
+	if os.Getenv("dev") == "true" {
+		log.Printf("DEV: Allowing cross-origin requests")
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowCredentials:true,
+		}))
+	}
+
 	e.Any("/create/:ident/*", h.create)
 	e.GET("/requests", h.get_requests)
 	e.POST("/replay", h.replay)

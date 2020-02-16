@@ -438,9 +438,7 @@ class MainPage extends React.Component {
     }
 
     async update() {
-        console.log("Updating");
         let url = base_url + "/requests";
-        console.log("UPdating");
 
         let resp = await this.err_checked_fetch(url);
         let resp_json = await resp.json();

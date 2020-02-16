@@ -1,9 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Button from '@material-ui/core/Button';
 import {withStyles, makeStyles} from "@material-ui/core/styles";
 import Highlight from "react-highlight"
-import {AppBar, Typography, Toolbar, CssBaseline, Drawer, List, ListItem, ListItemText, TextField, Divider, Card, CardHeader, CardContent, Grid, Table, TableRow, TableCell, TableBody, Paper, Tooltip, Chip, Badge, ListSubheader, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress, Link} from "@material-ui/core";
+import {Button, AppBar, Typography, Toolbar, CssBaseline, Drawer, List, ListItem, ListItemText, TextField, Divider, Card, CardHeader, CardContent, Grid, Table, TableRow, TableCell, TableBody, Paper, Tooltip, Chip, Badge, ListSubheader, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress, Link} from "@material-ui/core";
 import {Replay, Sync, Delete, GitHub} from "@material-ui/icons"
 import "highlight.js/styles/docco.css"
 import moment from "moment"
@@ -175,14 +174,14 @@ class DynamicRelTime extends React.Component {
         return this.state.timeString;
     }
     componentDidMount() {
-        let update = () => this.setTimeString(this.state.actualTime);
+        const update = () => this.setTimeString(this.state.actualTime);
         update();
         const one_second = 1_000;
         const ten_seconds = 10 * one_second;
-        this.interval = setInterval(update, ten_seconds);
+        this.timeInterval = setInterval(update, ten_seconds);
     }
     componentWillUnmount() {
-        clearInterval(this.interval);
+        clearInterval(this.timeInterval);
     }
 }
 
@@ -239,7 +238,7 @@ function CurrentReqDisplay(props) {
 
     const numReplays = props.req.replays.length;
     const succReplays = props.req.replays
-        .map(r => r.err_str !== null)
+        .map(r => r.err_str === null)
         .reduce((a, b) => a + b, 0);
     const failedReplays = numReplays - succReplays;
     const avgResponseTime =
@@ -264,7 +263,7 @@ function CurrentReqDisplay(props) {
         },
         {
             "name": "Average response time:",
-            "value": isNaN(avgResponseTime) ? "N/A" : `${1/100 * Math.round(100 * avgResponseTime).toString()}ms`,
+            "value": isNaN(avgResponseTime) ? "N/A" : `${(1/100 * Math.round(100 * avgResponseTime)).toString()}ms`,
         },
     ];
 
@@ -374,7 +373,7 @@ function Help(props) {
                     <Typography variant="body1" color="textSecondary" component="p">
                         For example, you could send the following HTTP request with cURL:
                     </Typography>
-                    <Highlight className={"shell"}>
+                    <Highlight className={"bash"}>
                         {
 `curl -X 'POST' \\
      -H 'content-type: application/json' \\
@@ -423,6 +422,9 @@ class App extends React.Component {
             if (mergedConfig.notify) {
                 this.props.enqueueSnackbar("Successfully synchronized requests and replays with server", {variant: "success"});
             }
+            if (this.state.curReqId === null && resp.data.length > 0) {
+                this.setState({curReqId: resp.data[0].id})
+            }
         }
         this.setState({ident: getCookie("ident")});
     }
@@ -431,6 +433,7 @@ class App extends React.Component {
         const resp = await this.wh.register();
         if (resp) {
             this.props.enqueueSnackbar(`Registered as ${resp.data.ident}`, {variant: "info"});
+            this.setState({curReqId: null});
         }
         this.setState({ident: getCookie("ident")});
         await this.updateRequests();
@@ -481,9 +484,6 @@ class App extends React.Component {
     }
 
     getCurrentReq() {
-        if (this.state.curReqId === null && this.state.reqs.length > 0) {
-            this.setState({curReqId: this.state.reqs[0].id})
-        }
         return this.state.reqs.filter(r => r.id === this.state.curReqId)[0];
     }
     

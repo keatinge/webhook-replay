@@ -40,6 +40,7 @@ type ReplayDB struct {
 
 type Handler struct {
 	rdb *ReplayDB
+	is_dev bool
 }
 
 type CreateResponse struct {
@@ -59,6 +60,7 @@ func (h *Handler) Init(db_file string) error {
 	if err != nil {
 		return err
 	}
+	h.is_dev = os.Getenv("dev") == "true"
 	return nil
 
 }
@@ -108,6 +110,9 @@ func (rdb *ReplayDB) InsertAllHeaders(tx *sql.Tx, id int64, headers []SavedHeade
 	}
 	query := fmt.Sprintf("insert into headers(%s, key, value) VALUES (?, ?, ?)", header_type)
 	for _, header := range headers {
+		if header.Key == "X-Real-Ip" { // This is added by NGINX
+			continue
+		}
 		_, err := tx.Exec(query, id, header.Key, header.Value)
 		if err != nil {
 			return err
@@ -368,7 +373,6 @@ func (h *Handler) create(c echo.Context) error {
 	ident := c.Param("ident")
 	user, err := h.GetUserByIdent(ident)
 	if err != nil {
-		fmt.Println(err)
 		return bad_request(c, fmt.Sprintf("Invalid identification: %v, this url does not exist", ident))
 	}
 
@@ -377,7 +381,7 @@ func (h *Handler) create(c echo.Context) error {
 
 	body_bytes, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unable to read request, error %v", err.Error()))
+		return bad_request(c, fmt.Sprintf("Unable to read request, error %v", err.Error()))
 	}
 	body_str := string(body_bytes)
 
@@ -398,7 +402,7 @@ func (h *Handler) create(c echo.Context) error {
 	}
 	inserted_id, err := h.rdb.SaveRequest(&req)
 	if err != nil {
-		log.Fatal(err)
+		return internal_error(c, fmt.Sprintf("Unable to save request to db %v", err))
 	}
 	log.Printf("Created request with id %v in response to request to %v", inserted_id, url_string)
 	resp := CreateResponse{
@@ -440,7 +444,7 @@ func unauthorized(c echo.Context) error {
 
 func rate_limited(c echo.Context, msg string) error {
 	err_resp := ErrorResponse{Message: msg, Success: false}
-	return c.JSON(http.StatusUnauthorized, err_resp)
+	return c.JSON(http.StatusTooManyRequests, err_resp)
 }
 
 type ReplayRequest struct {
@@ -539,8 +543,9 @@ func (h *Handler) replay(c echo.Context) error {
 		return bad_request(c, fmt.Sprintf("Unable to create http request, error: %q", err))
 	}
 
-	is_local := strings.Contains(http_req.URL.Host, "localhost") || strings.Contains(http_req.Host, "127.0.0.1")
-	if is_local && !strings.HasPrefix(c.Request().RemoteAddr, "[::1]") {
+	host_lower := strings.ToLower(http_req.URL.Host)
+	is_local := strings.Contains(host_lower, "localhost") || strings.Contains(host_lower, "127.0.0.1")
+	if is_local && !h.is_dev {
 		return bad_request(c, fmt.Sprintf("Host %v not allowed", http_req.URL.Host))
 	}
 
@@ -598,7 +603,7 @@ type RegisterResult struct {
 func (h *Handler) register_from_context(c echo.Context) (*User, error) {
 	user_agent := c.Request().Header.Get("User-Agent")
 
-	ip := strings.SplitN(c.Request().RemoteAddr, ":", 2)[0]
+	ip := c.Request().Header.Get("X-Real-Ip")
 	rand_buf := make([]byte, 16)
 	_, err := rand.Read(rand_buf)
 	if err != nil {

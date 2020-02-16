@@ -659,6 +659,6 @@ func main() {
 	e.GET("/requests", h.get_requests)
 	e.POST("/replay", h.replay)
 	e.POST("/register", h.register)
-	e.Static("/", "rfront/build")
+	e.Static("/", "whfrontend/build")
 	e.Logger.Fatal(e.Start(":5000"))
 }

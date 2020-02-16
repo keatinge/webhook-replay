@@ -39,7 +39,7 @@ type ReplayDB struct {
 }
 
 type Handler struct {
-	rdb *ReplayDB
+	rdb    *ReplayDB
 	is_dev bool
 }
 
@@ -640,7 +640,6 @@ func (h *Handler) register(c echo.Context) error {
 
 }
 
-
 func main() {
 
 	h := Handler{}
@@ -656,7 +655,7 @@ func main() {
 	if os.Getenv("dev") == "true" {
 		log.Printf("DEV: Allowing cross-origin requests")
 		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowCredentials:true,
+			AllowCredentials: true,
 		}))
 	}
 

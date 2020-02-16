@@ -12,46 +12,47 @@ export class WHReplay {
             timeout: 6000,
             withCredentials: true
         });
-        this.errorFunc = errorCallback
+        this.errorFunc = errorCallback;
     }
-    
-    async errCheckedJsonReq(config){
+
+    async errCheckedJsonReq(config) {
         try {
             const resp = await this.ax.request(config);
             return resp;
-        }
-        catch (e) {
+        } catch (e) {
             let errMsg;
             if (e.response) {
-                errMsg = `Server returned status ${e.response.status}: ${e.response.statusText} with data ${JSON.stringify(e.response.data)}`;
-            }
-            else if (e.request) {
+                errMsg = `Server returned status ${e.response.status}: ${
+                    e.response.statusText
+                } with data ${JSON.stringify(e.response.data)}`;
+            } else if (e.request) {
                 errMsg = "The request was made but no response was received";
-            }
-            else {
+            } else {
                 errMsg = `Unable to set up request: ${e.message}`;
             }
-            
+
             const fullErrorString = `Error: Request to ${config.url} failed. ${errMsg}`;
             this.errorFunc(fullErrorString);
         }
     }
 
     async register() {
-        return await this.errCheckedJsonReq({method: "POST", url: "/register"});
+        return await this.errCheckedJsonReq({ method: "POST", url: "/register" });
     }
 
     async getRequests() {
-        return await this.errCheckedJsonReq({method: "GET", url: "/requests"});
+        return await this.errCheckedJsonReq({ method: "GET", url: "/requests" });
     }
 
     async sendReplay(reqId, replayUrl) {
         const payload = {
-            "request_id": reqId,
-            "endpoint": replayUrl
+            request_id: reqId,
+            endpoint: replayUrl
         };
-        return await this.errCheckedJsonReq({method: "POST", url: "/replay",  data: payload})
-
+        return await this.errCheckedJsonReq({
+            method: "POST",
+            url: "/replay",
+            data: payload
+        });
     }
-
 }

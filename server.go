@@ -75,7 +75,13 @@ func (rdb *ReplayDB) Init(db_file string) error {
 	create table if not exists requests(id integer not null primary key, ident text not null, meth text not null, rem_url text not null, body text not null, recv_time datetime not null);
 	create table if not exists headers(id integer not null primary key, req_id, replay_id, key text not null, value text not null);
 	create table if not exists replays(id integer not null primary key, req_id integer not null, loc text, resp_code integer, resp_body text, start_at datetime, end_at datetime, err_str text);
-	create table if not exists users(id integer not null primary key, create_date datetime, user_agent text, ip text, identifier text)
+	create table if not exists users(id integer not null primary key, create_date datetime, user_agent text, ip text, identifier text);
+	
+	create index requests_by_ident on requests(ident);
+	create index headers_by_req on headers(req_id);
+	create index headers_by_replay on headers(replay_id);
+	create index replays_by_req on replays(req_id);
+	create index users_by_ident on users(identifier);
 	`
 	_, err = db.Exec(sql)
 	if err != nil {

@@ -106,8 +106,7 @@ This endpoint saves all incoming requests in the database. Any headers, body, an
 be accepted (as long as it's within the NGINX maximum size).
 
 ```
-$ curl -X 'POST' https://wkeatinge.com/replay/create/LnAemHFabieH0JQOJ55UAA/123 --data 'test data' 2
->/dev/null | jq
+$ curl -X 'POST' https://wkeatinge.com/replay/create/LnAemHFabieH0JQOJ55UAA/123 --data 'test data' 2>/dev/null | jq
 {
   "created_id": 52,
   "success": true,

@@ -217,7 +217,7 @@ function FullTime(props) {
 function ReqsList(props) {
     return (
         <List>
-            <ListSubheader disableSticky={true}>Captured Requests:</ListSubheader>
+            <ListSubheader disableSticky={true}>Captured Requests: {props.idle && "(not updating, idle)"}</ListSubheader>
             {props.reqs.map(r => (
                 <ListItem
                     button
@@ -490,18 +490,23 @@ class App extends React.Component {
             reqs: [],
             curReqId: null,
             ident: "",
-            replayUrl: ""
+            replayUrl: "",
+            idle: false,
         };
 
-        this.interval = setInterval(this.updateRequests.bind(this), 10_000);
     }
 
     async updateRequests(config) {
+        console.log("Updating requests");
+        if (this.state.idle) {
+
+            console.log("Not updating, idle");
+            return
+        }
         const defaults = {
             notify: false
         };
         const mergedConfig = Object.assign({}, defaults, config);
-        console.log("Updating requests");
         const resp = await this.wh.getRequests();
         if (resp) {
             console.log("Done updating");
@@ -520,6 +525,7 @@ class App extends React.Component {
         }
         this.setState({ ident: getCookie("ident") });
     }
+
 
     async register() {
         const resp = await this.wh.register();
@@ -575,6 +581,32 @@ class App extends React.Component {
         this.wh = new WHReplay(BASE_URL, errFunc);
         await this.registerIfNeeded();
         await this.updateRequests();
+
+        const second = 1_000;
+        const minute = 60 * second;
+        const updateDelay = 10 * second;
+        this.interval = setInterval(this.updateRequests.bind(this), updateDelay);
+        const maxIdleTime =  5 * minute;
+
+        const setIdleFn = newIdle => {
+            if (newIdle) {
+                this.props.enqueueSnackbar("You are now idle, requests will stop automatically updating");
+            }
+            else {
+                this.props.enqueueSnackbar("You are no longer idle, requests will automatically update");
+            }
+            this.setState({idle: newIdle});
+        };
+        const onAction = () => {
+            clearTimeout(this.idleTimeout);
+            if (this.state.idle) {
+                setIdleFn(false);
+            }
+            this.idleTimeout = setTimeout(() => setIdleFn(true), maxIdleTime);
+        };
+        onAction();
+        document.onmousemove = onAction;
+        document.onkeydown = onAction;
     }
 
     setCurReqId(curReqId) {
@@ -624,6 +656,7 @@ class App extends React.Component {
                         reqs={this.state.reqs}
                         setCurReqIdCallback={this.setCurReqId.bind(this)}
                         curReqId={this.state.curReqId}
+                        idle={this.state.idle}
                     />
                 </Drawer>
                 <main className={classes.content}>
@@ -648,6 +681,7 @@ class App extends React.Component {
                             reqs={this.state.reqs}
                             setCurReqIdCallback={this.setCurReqId.bind(this)}
                             curReqId={this.state.curReqId}
+                            idle={this.state.idle}
                         />
                     </div>
                     {currentReq !== undefined && (

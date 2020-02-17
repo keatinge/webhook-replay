@@ -1,0 +1,10 @@
+
+@media (max-width: 959.95px) {
+    .MuiTypography-h5 {
+        font-size: 1.0rem !important;
+    }
+    .MuiTypography-h6 {
+        font-size: 0.8rem !important;
+    }
+
+}

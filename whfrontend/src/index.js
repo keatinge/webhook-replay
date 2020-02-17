@@ -37,6 +37,7 @@ import {
 } from "@material-ui/core";
 import { Replay, Sync, Delete, GitHub } from "@material-ui/icons";
 import "highlight.js/styles/docco.css";
+import "./index.css"
 import moment from "moment";
 import { WHReplay, getCookie } from "./whreplay";
 import { SnackbarProvider, withSnackbar } from "notistack";
@@ -44,38 +45,7 @@ import { SnackbarProvider, withSnackbar } from "notistack";
 const IS_DEV = document.location.origin.includes("localhost");
 let BASE_URL = IS_DEV ? "http://localhost:5000" : `${document.location.origin}/replay`;
 
-const drawerWidth = 500;
-const styles = theme => ({
-    root: {
-        flexGrow: 1
-    },
-    appBar: {
-        width: `calc(100% - ${drawerWidth}px)`,
-        marginLeft: drawerWidth
-    },
-    title: {
-        flexGrow: 1
-    },
-    drawer: {
-        width: drawerWidth,
-        flexShrink: 0
-    },
-    drawerPaper: {
-        width: drawerWidth
-    },
-    content: {
-        marginLeft: drawerWidth,
-        flexGrow: 1,
-        padding: theme.spacing(3)
-    },
-    toolbar: theme.mixins.toolbar,
-    vertCentered: {
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "flex-end",
-        paddingBottom: 10
-    }
-});
+const drawerWidth = 400;
 
 function Slim2ColTable(props) {
     if (typeof props.data == "undefined") {
@@ -465,6 +435,54 @@ function Help(props) {
         </div>
     );
 }
+
+const styles = theme => ({
+    root: {
+        flexGrow: 1
+    },
+    appBar: {
+        [theme.breakpoints.up("md")]: {
+            width: `calc(100% - ${drawerWidth}px)`,
+            marginLeft: drawerWidth,
+        }
+    },
+    title: {
+        flexGrow: 1,
+    },
+    drawer: {
+        width: drawerWidth,
+        flexShrink: 0,
+        [theme.breakpoints.down("sm")]: {
+            display: "none",
+        }
+    },
+    drawerPaper: {
+        width: drawerWidth
+    },
+    content: {
+        [theme.breakpoints.up("md")]: {
+            marginLeft: drawerWidth,
+        },
+        flexGrow: 1,
+        padding: theme.spacing(3)
+    },
+    toolbar: theme.mixins.toolbar,
+    vertCentered: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-end",
+        paddingBottom: 10
+    },
+    mobileOnlyReqList: {
+        [theme.breakpoints.up("md")]: {
+            display: "none"
+        },
+        marginTop: 15,
+        maxHeight: "30vh",
+        overflowY: "auto"
+    }
+});
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -610,7 +628,7 @@ class App extends React.Component {
                 </Drawer>
                 <main className={classes.content}>
                     <Typography variant={"h5"}>
-                        Custom URL: <code>{customUrl}</code>
+                        Custom URL: <code style={{wordBreak: "break-all"}}>{customUrl}</code>
                     </Typography>
                     <div className={classes.vertCentered}>
                         <Typography
@@ -621,9 +639,15 @@ class App extends React.Component {
                         </Typography>
                         <TextField
                             style={{ flexGrow: 1 }}
-                            inputProps={{ style: { fontSize: "1.2rem" } }}
                             placeholder={"https://your-server.com/your-endpoint"}
                             onChange={e => this.setState({ replayUrl: e.target.value })}
+                        />
+                    </div>
+                    <div className={classes.mobileOnlyReqList}>
+                        <ReqsList
+                            reqs={this.state.reqs}
+                            setCurReqIdCallback={this.setCurReqId.bind(this)}
+                            curReqId={this.state.curReqId}
                         />
                     </div>
                     {currentReq !== undefined && (

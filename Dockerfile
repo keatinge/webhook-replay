@@ -4,8 +4,8 @@ WORKDIR /whreplay/whfrontend
 RUN npm install
 RUN npm run build
 FROM golang:1.13 as go-builder
-COPY go.mod *.go /whreplay/
-WORKDIR /whreplay
+COPY backend /whreplay/backend
+WORKDIR /whreplay/backend
 RUN go get -d .
 RUN GOOS=linux go build -o /whreplay/server *.go
 FROM alpine:3.11

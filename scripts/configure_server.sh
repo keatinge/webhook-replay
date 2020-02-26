@@ -4,10 +4,6 @@ mkdir ~/install
 pushd  ~/install
 git clone https://github.com/keatinge/webhook-replay.git
 
-# Configure nginx
-sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
-sudo cp ~/install/webhook-replay/nginx.conf /etc/nginx/nginx.conf
-
 sudo mkdir /logs
 sudo touch /logs/nginx-access.log
 sudo touch /logs/nginx-error.log

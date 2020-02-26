@@ -1,5 +1,5 @@
 # What is webhook-replay?
-webhook-replay is a project built to make it easier to develop and test webhooks with
+Webhook-replay is a project built to make it easier to develop and test webhooks with
 services that don't allow you to send test requests.
 In a nutshell, it's like https://requestbin.com but also allows you to replay incoming requests,
 sending them to a url of your choosing. 
@@ -19,6 +19,16 @@ captured requests on a url of your choosing.
 2. http://requestbin.net/
 3. https://httpbin.org/
 4. https://webhook.site/
+
+# Running locally with Docker
+```bash
+git clone https://github.com/keatinge/webhook-replay.git
+cd webhook-replay
+docker build . -t 'whreplay:latest' # This will take a while on the first build
+docker run -p 5000:5000 -e dev=true
+```
+You should now be able to see the web server at http://localhost:5000
+
 
 # Example walkthrough
 - Go to https://wkeatinge.com/replay/, an account is automatically created for you, storing
@@ -70,13 +80,13 @@ the Echo API's response.
 1. The database is SQLite, but may change to Postgres at some point. SQLite is nice here
 because it makes it very easy to run locally, for example as a self-contained docker image.
 Switching to Postgres will require running using docker-compose.
-1. See `server.go` for the implementation
+1. See the `backend` directory for the implementation
 ## Frontend
 1. The frontend is written in React using the excellent [Material UI](https://material-ui.com/) component library.
 1. [react-highlight.js](https://github.com/bvaughn/react-highlight.js) (which uses highlight.js) is used for highlighting JSON response bodies and bash snippets (for cURL requests)
 1. [axios](https://github.com/axios/axios) is used for HTTP requests.
 1. [notistack](https://github.com/iamhosseindhv/notistack) is used for success/error/info alerts.
-1. See `whfrontend/src/index.js` and `whfrontend/src/whreplay.js` for the implementation
+1. See `whfrontend/src` for the implementation
 ## Deployment
 1. https://webhook-replay.com is deployed to Google's Compute Engine.
 1. On the server docker-compose runs a prebuilt docker image (saved as a tar)
@@ -86,7 +96,7 @@ Switching to Postgres will require running using docker-compose.
 1. The docker image uses two multi-stage builds. One to build the backend and one to build the frontend. The final image is based on Alpine linux and comes in at a decent `34.3MB`. (It was nearly `1GB` before the multi-stage builds! Mostly because of `node_modules`)
 1. On the server NGINX runs as a reverse proxy to the Golang server on port 5000
 1. The SSL certificate was generated using [Lets Encrypt](https://letsencrypt.org/)
-1. See `Dockerfile`, `docker-compose.yml`, `configure_server.sh`, `deploy.sh`, and `deploy_server_side.sh` for some of the relevant files.
+1. See `Dockerfile`, `docker-compose.yml`, `scripts/configure_server.sh`, `scipts/deploy.sh`, and `scripts/deploy_server_side.sh` for some of the relevant files.
 
 
 # REST API Documentation

@@ -274,7 +274,8 @@ func (h *Handler) replay(c echo.Context) error {
 
 	host_lower := strings.ToLower(http_req.URL.Host)
 	is_local := strings.Contains(host_lower, "localhost") || strings.Contains(host_lower, "127.0.0.1")
-	if is_local && !h.is_dev {
+	is_google_internal := strings.Contains(host_lower, "google.internal")
+	if (is_local || is_google_internal) && !h.is_dev {
 		return bad_request(c, fmt.Sprintf("Host %v not allowed", http_req.URL.Host))
 	}
 

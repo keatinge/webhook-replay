@@ -31,6 +31,16 @@ func main() {
 	e.GET("/requests", h.get_requests)
 	e.POST("/replay", h.replay)
 	e.POST("/register", h.register)
-	e.Static("/", "../whfrontend/build")
+
+	path1 := "../whfrontend/build"
+	path2 := "./whfrontend/build"
+	if _, err := os.Stat(path1); err == nil {
+		e.Static("/", path1)
+	} else if _, err := os.Stat(path2); err == nil {
+		e.Static("/", path2)
+	} else {
+		log.Fatal("Could not find static directory in %v or %v", path1, path2)
+
+	}
 	e.Logger.Fatal(e.Start(":5000"))
 }

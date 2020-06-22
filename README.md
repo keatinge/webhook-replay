@@ -5,10 +5,10 @@ In a nutshell, it's like https://requestbin.com but also allows you to replay in
 sending them to a url of your choosing. 
 
 The idea is that developers would use the following workflow:
-1. Visit https://wkeatinge.com/replay and get a custom url
+1. Visit https://replay.wkeatinge.com/replay and get a custom url
 1. Configure the webhook service (Github, Hubspot, etc) to send webhook requests to the custom URL
 1. Do the action in the service (Github, Hubspot, etc) that triggers the webhook to be sent
-1. The webhook method, url, headers, and body can now be inspected at https://wkeatinge.com/replay
+1. The webhook method, url, headers, and body can now be inspected at https://replay.wkeatinge.com/replay
 1. The developer configures their replay URL to point a server they control (or use a [ngrok](https://ngrok.com) url for development on localhost)
 1. The developer can now replay the exact request as many times as needed to test how their application would perform if it had received the webhook request.
 
@@ -31,19 +31,19 @@ You should now be able to see the web server at http://localhost:5000
 
 
 # Example walkthrough
-- Go to https://wkeatinge.com/replay/, an account is automatically created for you, storing
+- Go to https://replay.wkeatinge.com/replay/, an account is automatically created for you, storing
 a unique id in your browser's cookies. Here's what the page should look like:
 ![Copy the curl request](assets/mat-screen0.png)
 
-- At the top you should see a custom URL that looks like `https://wkeatinge.com/replay/create/.../`. 
+- At the top you should see a custom URL that looks like `https://replay.wkeatinge.com/replay/create/.../`. 
 Any requests sent to this URL will be visible in the web client.
-- For example, you could send the following request (which you can copy and paste from code block displayed on https://wkeatinge.com/replay)
+- For example, you could send the following request (which you can copy and paste from code block displayed on https://replay.wkeatinge.com/replay)
 
 ```
 curl -X 'POST' \
      -H 'content-type: application/json' \
      --data '{"colors": [{"color": "red", "category": "hue", "type": "primary"}]}' \
-     https://wkeatinge.com/replay/create/YOUR_UNIQUE_ID_HERE/
+     https://replay.wkeatinge.com/replay/create/YOUR_UNIQUE_ID_HERE/
 ```
 
 ***NOTE: If you copy and paste the request from here (the README) you will need to change the URL to your "Custom URL"***
@@ -62,14 +62,14 @@ to *replay* this request, to send this exact request to a different url
 we can send the replays to the [Postman Echo API](https://postman-echo.com/?source=echo-collection-app-onboarding). Postman Echo
 simply responds to HTTP requests with some JSON describing the request that was received.
 
-- At the top of https://wkeatinge.com/replay paste the URL: `https://postman-echo.com/post` into the
+- At the top of https://replay.wkeatinge.com/replay paste the URL: `https://postman-echo.com/post` into the
 textbox labeled "Replay URL".
 
 
 - Click the blue button at the bottom that says "Send new replay" to send that same colors json
 request to the Postman Echo API.
 
-- From within https://wkeatinge.com/replay you can see the request was indeed sent, and you can see
+- From within https://replay.wkeatinge.com/replay you can see the request was indeed sent, and you can see
 the Echo API's response.
 
 ![See the echo response](assets/mat-screen2.png)
@@ -104,7 +104,7 @@ Switching to Postgres will require running using docker-compose.
 This endpoint allows you to register with webhook-replay, giving you access to a custom url.
 Send an empty POST request to `/register` to receive an `ident`, which you can then use with `/create/:ident/*` request.
 ```bash
-$ curl -X 'POST' https://wkeatinge.com/replay/register 2>/dev/null | jq
+$ curl -X 'POST' https://replay.wkeatinge.com/replay/register 2>/dev/null | jq
 {
   "ident": "LnAemHFabieH0JQOJ55UAA"
 }
@@ -116,7 +116,7 @@ This endpoint saves all incoming requests in the database. Any headers, body, an
 be accepted (as long as it's within the NGINX maximum size).
 
 ```
-$ curl -X 'POST' https://wkeatinge.com/replay/create/LnAemHFabieH0JQOJ55UAA/123 --data 'test data' 2>/dev/null | jq
+$ curl -X 'POST' https://replay.wkeatinge.com/replay/create/LnAemHFabieH0JQOJ55UAA/123 --data 'test data' 2>/dev/null | jq
 {
   "created_id": 52,
   "success": true,
@@ -135,7 +135,7 @@ This endpoint returns the 50 most recent received requests at your endpoint. You
 should be specified in a cookie as shown below
 
 ```bash
-$ curl -X 'GET' https://wkeatinge.com/replay/requests --cookie 'ident=LnAemHFabieH0JQOJ55UAA' 2>/dev/null | jq
+$ curl -X 'GET' https://replay.wkeatinge.com/replay/requests --cookie 'ident=LnAemHFabieH0JQOJ55UAA' 2>/dev/null | jq
 [
   {
     "id": 52,
@@ -184,7 +184,7 @@ The request body be JSON and should contain a `request_id` and an `endpoint`.
 
 ```bash
 $ curl -X 'POST' --cookie 'ident=LnAemHFabieH0JQOJ55UAA' --data '{"request_id": 52, "endpoint": "htt
-ps://postman-echo.com/post"}' --header 'Content-Type: application/json' https://wkeatinge.com/replay/repl
+ps://postman-echo.com/post"}' --header 'Content-Type: application/json' https://replay.wkeatinge.com/replay/repl
 ay 2>/dev/null | jq
 {
   "replay_id": 58

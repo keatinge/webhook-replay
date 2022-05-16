@@ -10,7 +10,7 @@
     "@testing-library/user-event": "^7.2.1",
     "axios": "^0.19.2",
     "material-ui-icons": "^1.0.0-beta.36",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "notistack": "^0.9.7",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
